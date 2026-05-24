@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2681/2681929.png">
+
+    <meta name="apple-mobile-web-app-title" content="Agenda Dra. Halanna">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>Odonto Manager Pro | Agenda Dra. Halanna</title>
+    <style>
+        :root {
+            /* Variáveis do Modo Claro (Padrão) */
+            --bg-body: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-elemento: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #3b82f6;
+            
+            /* Cores dos Procedimentos (Mantidas vibrantes em ambos os temas) */
+            --cor-Avaliação: #94a3b8;
+            --cor-Limpeza: #22c55e;
+            --cor-Clareamento: #f59e0b;
+            --cor-Restauração: #3b82f6;
+            --cor-Canal: #ef4444;
+            --cor-Extração: #7c3aed;
+            --cor-Prótese: #ec4899;
+        }
+
+        /* Variáveis do Modo Escuro */
+        [data-theme="dark"] {
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-elemento: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #475569;
+        }
+
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: var(--bg-body); 
+            color: var(--text-main);
+            margin: 0; 
+            padding-bottom: 40px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Header e Botão de Tema */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: var(--bg-surface);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+        
+        header h1 { font-size: 1.2rem; margin: 0; color: var(--text-main); }
+        
+        .theme-switch {
+            background: var(--bg-elemento);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .theme-switch:hover { background: var(--border-color); }
+
+        /* Notificação Toast */
+        #toast {
+            position: fixed; top: 20px; right: 20px;
+            background: var(--text-main); color: var(--bg-surface);
+            padding: 12px 24px; border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none; z-index: 1000; font-weight: 500;
+            border-left: 4px solid var(--cor-Limpeza);
+        }
+
+        /* Menu de Abas */
+        .nav-tabs { display: flex; background: var(--bg-surface); box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; transition: 0.3s; }
+        .tab-btn { flex: 1; padding: 15px; border: none; background: none; font-weight: bold; cursor: pointer; color: var(--text-muted); border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: var(--bg-elemento); }
+
+        .container { max-width: 900px; margin: 20px auto; padding: 0 15px; }
+        .secao { background: var(--bg-surface); padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; display: none; transition: 0.3s; }
+        .secao.active { display: block; }
+
+        h2 { margin-top: 0; font-size: 1.3rem; color: var(--text-main); margin-bottom: 20px; border-left: 4px solid var(--primary); padding-left: 10px; }
+        h3 { color: var(--text-main); }
+
+        /* Formulário */
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+        
+        input, select { 
+            width: 100%; padding: 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; box-sizing: border-box; 
+            font-size: 1rem;
+            background: var(--bg-body);
+            color: var(--text-main);
+            transition: 0.3s;
+        }
+        
+        .btn-add { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-add:hover { filter: brightness(1.1); }
+
+        /* Calendário */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .calendar-header button { background: var(--bg-elemento); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .day-name { text-align: center; font-weight: bold; font-size: 0.7rem; color: var(--text-muted); padding: 5px 0; }
+        .day { 
+            aspect-ratio: 1/1; background: var(--bg-elemento); 
+            border: 1px solid var(--border-color); border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 0.9rem; font-weight: bold; cursor: pointer; 
+            position: relative; color: var(--text-main); overflow: hidden; 
+        }
+        .day span { position: relative; z-index: 2; text-shadow: 0 0 4px rgba(255,255,255,0.8); }
+        [data-theme="dark"] .day span { text-shadow: 0 0 4px rgba(0,0,0,0.9); } /* Sombra ajustada para modo escuro */
+
+        /* To-Do List e Detalhes */
+        .todo-item { display: flex; align-items: center; padding: 12px; background: var(--bg-elemento); border-radius: 10px; margin-bottom: 8px; border-left: 5px solid var(--border-color); transition: 0.2s; }
+        .todo-checkbox { width: 22px !important; height: 22px !important; margin-right: 15px; cursor: pointer; accent-color: var(--primary); }
+        .todo-content { flex-grow: 1; }
+        .todo-content strong { display: block; font-size: 1rem; color: var(--text-main); }
+        .todo-content small { color: var(--text-muted); }
+        .btn-x { background: none; border: none; color: var(--text-muted); font-weight: bold; cursor: pointer; font-size: 1.2rem; padding: 0 10px; }
+        .btn-x:hover { color: var(--cor-Canal); }
+
+        /* Classes de Procedimento para as Bordas dos Cards */
+        .border-Avaliação { border-left-color: var(--cor-Avaliação); }
+        .border-Limpeza { border-left-color: var(--cor-Limpeza); }
+        .border-Clareamento { border-left-color: var(--cor-Clareamento); }
+        .border-Restauração { border-left-color: var(--cor-Restauração); }
+        .border-Canal { border-left-color: var(--cor-Canal); }
+        .border-Extração { border-left-color: var(--cor-Extração); }
+        .border-Prótese { border-left-color: var(--cor-Prótese); }
+
+        /* Histórico */
+        .hist-item { opacity: 0.6; border-left-style: dashed; }
+        
+        /* RESPONSIVIDADE (SMARTPHONES) */
+        @media (max-width: 600px) {
+            .grid-form { grid-template-columns: 1fr; gap: 0; }
+            .secao { padding: 15px; }
+            .calendar-header h3 { font-size: 1rem; }
+            .day { font-size: 0.8rem; }
+            header { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Consultório Odontológico</h1>
+        <button class="theme-switch" id="themeBtn" onclick="toggleTheme()">
+            <span id="themeIcon">🌙</span> <span id="themeText">Modo Escuro</span>
+        </button>
+    </header>
+
+    <div id="toast">Paciente enviado para o Histórico!</div>
+
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="tab('agenda')">Agenda & Lista</button>
+        <button class="tab-btn" onclick="tab('historico')">Histórico</button>
+    </nav>
+
+    <div class="container">
+        
+        <div id="agenda" class="secao active">
+            <h2>Atendimento Dra. Halanna Mayssa</h2>
+            <form id="formGeral">
+                <div class="form-group"><label>Paciente</label><input type="text" id="nome" required></div>
+                <div class="grid-form">
+                    <div class="form-group"><label>Data</label><input type="date" id="data" required></div>
+                    <div class="form-group"><label>Hora</label><input type="time" id="hora" required></div>
+                </div>
+                <div class="form-group">
+                    <label>Procedimento</label>
+                    <select id="proc">
+                        <option value="Avaliação">Avaliação</option>
+                        <option value="Limpeza">Limpeza</option>
+                        <option value="Clareamento">Clareamento</option>
+                        <option value="Restauração">Restauração</option>
+                        <option value="Canal">Canal</option>
+                        <option value="Extração">Extração</option>
+                        <option value="Prótese">Prótese</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-add">Adicionar à Lista</button>
+            </form>
+
+            <div style="margin-top: 30px;">
+                <h3>📋 Próximas Consultas</h3>
+                <div id="listaAfa"></div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <div class="calendar-header">
+                    <button onclick="changeMes(-1)">◀</button>
+                    <h3 id="mesNome">Maio 2024</h3>
+                    <button onclick="changeMes(1)">▶</button>
+                </div>
+                <div class="calendar-grid" id="calGrid"></div>
+                
+                <div id="detalhesDia" style="margin-top: 25px; padding-top: 15px; border-top: 2px solid var(--border-color);">
+                    <h3>Detalhes do Dia</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Selecione um dia no calendário acima para ver os atendimentos detalhados.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="historico" class="secao">
+            <h2>Histórico de Atendimentos</h2>
+            <div id="listaHist"></div>
+        </div>
+
+    </div>
+
+<script>
+    // --- LÓGICA DO TEMA CLARO/ESCURO ---
+    function initTheme() {
+        const savedTheme = localStorage.getItem('odontoTheme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeUI(savedTheme);
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('odontoTheme', newTheme);
+        updateThemeUI(newTheme);
+    }
+
+    function updateThemeUI(theme) {
+        const icon = document.getElementById('themeIcon');
+        const text = document.getElementById('themeText');
+        if(theme === 'dark') {
+            icon.innerText = '☀️'; text.innerText = 'Modo Claro';
+        } else {
+            icon.innerText = '🌙'; text.innerText = 'Modo Escuro';
+        }
+    }
+    
+    // Inicializa o tema ao abrir
+    initTheme();
+
+    // --- LÓGICA DO SISTEMA ---
+    let dataRef = new Date();
+
+    function showToast(mensagem) {
+        const toast = document.getElementById('toast');
+        toast.innerText = mensagem;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    function tab(id) {
+        document.querySelectorAll('.secao').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    document.getElementById('formGeral').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obj = {
+            id: Date.now(),
+            nome: document.getElementById('nome').value,
+            data: document.getElementById('data').value,
+            hora: document.getElementById('hora').value,
+            proc: document.getElementById('proc').value,
+            done: false
+        };
+        let db = JSON.parse(localStorage.getItem('odontoDB')) || [];
+        db.push(obj);
+        localStorage.setItem('odontoDB', JSON.stringify(db));
+        e.target.reset();
+        render();
+    });
+
+    function render() {
+        const db = JSON.parse(localStorage.getItem('odontoDB')) || [];
+        const listaAfa = document.getElementById('listaAfa');
+        const listaHist = document.getElementById('listaHist');
+        
+        listaAfa.innerHTML = '';
+        listaHist.innerHTML = '';
+
+        db.sort((a,b) => new Date(a.data+'T'+a.hora) - new Date(b.data+'T'+b.hora));
+
+        db.forEach(i => {
+            const dataBr = i.data.split('-').reverse().join('/');
+            const html = `
+                <div class="todo-item border-${i.proc} ${i.done ? 'hist-item' : ''}">
+                    ${!i.done ? `<input type="checkbox" class="todo-checkbox" onclick="toggle(${i.id}, '${i.nome}')">` : ''}
+                    <div class="todo-content">
+                        <strong>${i.nome}</strong>
+                        <small>${dataBr} às ${i.hora} - ${i.proc}</small>
+                    </div>
+                    <button class="btn-x" onclick="remove(${i.id})">×</button>
+                </div>
+            `;
+            if(i.done) listaHist.innerHTML += html;
+            else listaAfa.innerHTML += html;
+        });
+
+        renderCal();
+    }
+
+    function renderCal() {
+        const grid = document.getElementById('calGrid');
+        const db = JSON.parse(localStorage.getItem('odontoDB')) || [];
+        grid.innerHTML = '';
+        
+        const m = dataRef.getMonth();
+        const y = dataRef.getFullYear();
+        document.getElementById('mesNome').innerText = new Intl.DateTimeFormat('pt-BR', {month:'long', year:'numeric'}).format(dataRef);
+
+        ["D","S","T","Q","Q","S","S"].forEach(d => grid.innerHTML += `<div class="day-name">${d}</div>`);
+
+        const skip = new Date(y, m, 1).getDay();
+        const days = new Date(y, m + 1, 0).getDate();
+
+        for(let i=0; i<skip; i++) grid.innerHTML += `<div></div>`;
+
+        for(let i=1; i<=days; i++) {
+            const dStr = `${y}-${String(m+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            const procsDia = [...new Set(db.filter(a => a.data === dStr).map(a => a.proc))];
+            
+            let style = "";
+            if(procsDia.length === 1) {
+                style = `background-color: var(--cor-${procsDia[0]})`;
+            } else if(procsDia.length > 1) {
+                const percent = 100 / procsDia.length;
+                let grad = procsDia.map((p, idx) => `var(--cor-${p}) ${idx * percent}%, var(--cor-${p}) ${(idx + 1) * percent}%`).join(', ');
+                style = `background: linear-gradient(135deg, ${grad})`;
+            }
+
+            grid.innerHTML += `<div class="day" style="${style}" onclick="verDetalhesDia('${dStr}')"><span>${i}</span></div>`;
+        }
+    }
+
+    function verDetalhesDia(dataStr) {
+        const div = document.getElementById('detalhesDia');
+        const db = JSON.parse(localStorage.getItem('odontoDB')) || [];
+        const filtrados = db.filter(d => d.data === dataStr);
+        
+        let html = `<h3>Consultas em ${dataStr.split('-').reverse().join('/')}</h3>`;
+        if(filtrados.length === 0) {
+            html += "<p style='color: var(--text-muted); font-size: 0.9rem;'>Nenhum agendamento para este dia.</p>";
+        } else {
+            filtrados.sort((a,b) => a.hora.localeCompare(b.hora)).forEach(f => {
+                html += `
+                <div class="todo-item border-${f.proc} ${f.done ? 'hist-item' : ''}">
+                    <div class="todo-content">
+                        <strong>${f.hora} - ${f.nome}</strong>
+                        <small>Procedimento: ${f.proc} ${f.done ? '(Concluído)' : '(Pendente)'}</small>
+                    </div>
+                </div>`;
+            });
+        }
+        div.innerHTML = html;
+    }
+
+    function toggle(id, nomePaciente) {
+        let db = JSON.parse(localStorage.getItem('odontoDB'));
+        db = db.map(i => i.id === id ? {...i, done: true} : i);
+        localStorage.setItem('odontoDB', JSON.stringify(db));
+        render();
+        showToast(`Paciente "${nomePaciente}" enviado para o Histórico!`);
+    }
+
+    function remove(id) {
+        if(!confirm("Excluir definitivamente?")) return;
+        let db = JSON.parse(localStorage.getItem('odontoDB'));
+        db = db.filter(i => i.id !== id);
+        localStorage.setItem('odontoDB', JSON.stringify(db));
+        render();
+    }
+
+    function changeMes(v) { dataRef.setMonth(dataRef.getMonth() + v); renderCal(); }
+
+    render();
+</script>
+</body>
+</html>
